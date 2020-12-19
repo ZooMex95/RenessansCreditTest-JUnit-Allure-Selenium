@@ -1,16 +1,20 @@
 package ru.homework.framework.pages;
 
+import io.qameta.allure.Step;
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
 
 import java.util.List;
 
 public class DepositPage extends BasePage {
+    private int resultReplenish;
+
     @FindBy(xpath = "//div[@class='calculator__currency-row']/div/label/span/span")
     private List<WebElement> valutes;
 
@@ -32,6 +36,7 @@ public class DepositPage extends BasePage {
     @FindBy(xpath = "//span[@class='js-calc-result']")
     private WebElement result;
 
+    @Step("Выбор валюты {valute}")
     public DepositPage selectValute(String valute) {
         for (WebElement element: valutes) {
             if (element.getText().equalsIgnoreCase(valute)){
@@ -43,17 +48,23 @@ public class DepositPage extends BasePage {
         return this;
     }
 
+    @Step("Заполнение текстового поля {fieldName} значением {value}")
     public DepositPage fillTextFields(String fieldName, String value) {
         for (WebElement element: textFields) {
             switch (fieldName){
                 case "Сумма вклада":
+                    String beforeFill = result.getText();
                     if (element.getAttribute("name").equals("amount")) {
                         fillField(element, value);
+                        waitChangeText(result, beforeFill);
                     }
                     break;
                 case "Ежемесячное пополнение":
                     if (element.getAttribute("name").equals("replenish")) {
+                        beforeFill = result.getText();
                         fillField(element, value);
+                        resultReplenish *= Integer.parseInt(value);
+                        waitChangeText(result, beforeFill);
                     }
                     break;
                 default:
@@ -63,10 +74,14 @@ public class DepositPage extends BasePage {
         return this;
     }
 
+    @Step("Выбор срока депозита {depositTime}")
     public DepositPage setDepositTime(String depositTime) {
         Select select = new Select(selectElement);
         try {
+            String beforeFill = result.getText();
             select.selectByVisibleText(depositTime);
+            resultReplenish =Integer.parseInt(select.getAllSelectedOptions().get(0).getAttribute("value")) - 1;
+            waitChangeText(result, beforeFill);
             Assert.assertEquals("Срок вклада выбран не верно",
                     depositTime, select.getAllSelectedOptions().get(0).getText());
             return this;
@@ -78,32 +93,39 @@ public class DepositPage extends BasePage {
         }
     }
 
+    @Step("Включение кнопки капитализация")
     public DepositPage capitalizationOn() {
-        //scrollToElementJs(capitalizationButton);
+        String beforeClick = result.getText();
         capitalizationButton.click();
+        waitChangeText(result, beforeClick);
         WebElement currentCapitalization = capitalizationButton.findElement(By.xpath("./../span/div"));
         Assert.assertTrue("Капитализация не включилась",
                 currentCapitalization.getAttribute("className").endsWith("checked"));
         return this;
     }
 
+    @Step("Проверка начисленных процентов {earned}")
     public DepositPage checkEarnedPercent(String earned) {
         Assert.assertEquals("Сумма полученных процентов не совпадает",
                 earned, earnedPercent.getText());
         return this;
     }
 
-    public DepositPage checkReplenish(String earned) {
+    @Step("Проверка ежемесячного пополнения")
+    public DepositPage checkReplenish() {
         Assert.assertEquals("Сумма пополнения не совпадает",
-                earned, replenish.getText());
+                resultReplenish, Integer.parseInt(replenish.getText().replaceAll("\\D", "")));
         return this;
     }
 
-    public DepositPage checkResult(String earned) {
+    @Step("Проверка общей суммы {total}")
+    public DepositPage checkResult(String total) {
         Assert.assertEquals("Итоговая сумма не совпадает",
-                earned, result.getText());
+                total, result.getText());
         return this;
     }
 
-
+    private void waitChangeText(WebElement element, String oldText) {
+        wait.until(ExpectedConditions.not(ExpectedConditions.textToBePresentInElement(element, oldText)));
+    }
 }

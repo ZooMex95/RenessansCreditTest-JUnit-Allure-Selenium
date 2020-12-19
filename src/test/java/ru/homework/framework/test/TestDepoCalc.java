@@ -13,8 +13,8 @@ public class TestDepoCalc extends BaseTest {
     @Parameterized.Parameters
     public static Collection data() {
         return Arrays.asList(new Object[][]{
-                {"Рубли", "300000", "6 месяцев", "50000", "9 132,17", "250 000", "559 132,17"},
-                {"Доллары США", "50000", "12 месяцев", "3000", "100,36", "33 000", "83 100,36"},
+                {"Рубли", "300000", "6 месяцев", "50000", "9 132,17", "559 132,17"},
+                {"Доллары США", "50000", "12 месяцев", "3000", "100,36", "83 100,36"},
         });
     }
 
@@ -29,13 +29,11 @@ public class TestDepoCalc extends BaseTest {
     @Parameterized.Parameter(4)
     public String percent;
     @Parameterized.Parameter(5)
-    public String replenish;
-    @Parameterized.Parameter(6)
     public String result;
 
 
     @Test
-    public void test() throws InterruptedException {
+    public void test() {
         app.getStartPage()
         .getDepositPage("Вклады")
         .selectValute(valute)
@@ -44,8 +42,7 @@ public class TestDepoCalc extends BaseTest {
         .fillTextFields("Ежемесячное пополнение", monthlyPay)
         .capitalizationOn()
         .checkEarnedPercent(percent)
-        .checkReplenish(replenish)
+        .checkReplenish()
         .checkResult(result);
-        Thread.sleep(3000);
     }
 }

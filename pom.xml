@@ -21,7 +21,7 @@
         <!--Dependencies version-->
         <selenium.java.version>3.141.59</selenium.java.version>
         <junit.version>4.13.1</junit.version>
-        <allure.junit4.version>2.13.8</allure.junit4.version>
+        <allure.junit4.version>2.13.5</allure.junit4.version>
         <aspectj.version>1.8.10</aspectj.version>
 
     </properties>
@@ -52,6 +52,18 @@
 
     <build>
         <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <encoding>${encoding.type}</encoding>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -59,6 +71,7 @@
                 <configuration>
                     <testFailureIgnore>true</testFailureIgnore>
                     <includes>**/*Test.java</includes>
+                    <includes>**/Test*.java</includes>
                     <argLine>
                         -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
                     </argLine>
@@ -68,7 +81,7 @@
                     <properties>
                         <property>
                             <name>listener</name>
-                            <value>io.qameta.allure.listener.TestLifecycleListener</value>
+                            <value>io.qameta.allure.junit4.AllureJunit4</value>
                         </property>
                     </properties>
                 </configuration>
@@ -81,16 +94,7 @@
                 </dependencies>
             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                    <encoding>${encoding.type</encoding>
-                </configuration>
-            </plugin>
+
 
             <plugin>
                 <groupId>io.qameta.allure</groupId>
@@ -98,8 +102,8 @@
                 <version>2.10.0</version>
                 <configuration>
                     <reportVersion>2.10.0</reportVersion>
-                    <reportDirectory>${project.build.directory}/reports/allure-report</reportDirectory>
                     <resultsDirectory>${project.build.directory}/reports/allure-result</resultsDirectory>
+                    <reportDirectory>${project.build.directory}/reports/allure-reports</reportDirectory>
                 </configuration>
             </plugin>
         </plugins>
